@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ppcamp/go-lib/shutdown"
+	"github.com/ppcamp/go-cli/shutdown"
 	"github.com/stretchr/testify/assert"
 )
 

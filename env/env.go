@@ -6,7 +6,7 @@ import (
 	basestrings "strings"
 	"syscall"
 
-	"github.com/ppcamp/go-lib/strings"
+	"github.com/ppcamp/go-strings"
 )
 
 var (

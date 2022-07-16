@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ppcamp/go-lib/env"
+	"github.com/ppcamp/go-cli/env"
 	"github.com/stretchr/testify/require"
 )
 
