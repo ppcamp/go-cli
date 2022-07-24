@@ -3,15 +3,17 @@ package env
 import (
 	"errors"
 	"fmt"
+	"os"
 	basestrings "strings"
 	"syscall"
 
-	"github.com/ppcamp/go-strings"
+	"github.com/jedib0t/go-pretty/table"
+	"github.com/jedib0t/go-pretty/text"
+	"github.com/ppcamp/go-xtendlib/interfaces"
 )
 
 var (
-	ErrFlagRequired   error = errors.New("the flag is required")
-	ErrUnexpectedType error = errors.New("unexpected type")
+	ErrFlagRequired error = errors.New("the flag is required")
 )
 
 func fromEnv(envVar string) (string, bool) {
@@ -19,12 +21,25 @@ func fromEnv(envVar string) (string, bool) {
 	return syscall.Getenv(envVar)
 }
 
-type Flag interface {
-	Apply() error
+// isEmpty check if the value has the same value as an unitialized variable
+func isEmpty[T interfaces.Ordered](value T) bool {
+	var r T
+	return r == value
 }
 
+type Flag interface {
+	Apply() error
+	fmt.Stringer
+	Name() string
+	CurrentValue() any
+	IsRequired() bool
+	DefaultValue() any
+}
+
+type Flags []Flag
+
 // Parse the passed flags
-func Parse(flags []Flag) error {
+func Parse(flags Flags) error {
 	for _, v := range flags {
 		if err := v.Apply(); err != nil {
 			return fmt.Errorf("fail to parse %w", err)
@@ -33,92 +48,20 @@ func Parse(flags []Flag) error {
 	return nil
 }
 
-type BaseFlagTypes interface {
-	string | int | int64 | int32 | float32 | float64
-}
+func (s Flags) String() string {
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.SetTitle("\nBase Flag\n")
+	t.AppendHeader(table.Row{"Var Name", "Default Value", "Required", "Current Value"})
+	style := table.StyleLight
+	style.Format.Header = text.FormatDefault
+	t.SetStyle(style)
 
-// BaseFlag can be used for the BaseFlagTypes only.
-//
-// If you don't pass a Default value, the variable will be mandatory
-type BaseFlag[T BaseFlagTypes] struct {
-	// Value is the address of some variable, which can be some pkg variable, for example
-	Value *T
-
-	// Default is the default value to assign to this variable
-	Default T
-
-	// EnvName is the name of the environment variable that will try to fetch this data
-	EnvName string
-
-	// Required is used to check if the value was found in the path.
-	// This is necessary, since that an empty variable can be in the env
-	Required bool
-}
-
-// isEmpty check if the value has the same value as an unitialized variable
-func (s *BaseFlag[T]) isEmpty(value T) bool {
-	var r T
-	return r == value
-}
-
-func (s *BaseFlag[T]) Apply() error {
-	valueFromEnv, exist := fromEnv(s.EnvName)
-	// check if the flag don't exist and if there's no default value
-	if !exist && s.isEmpty(s.Default) && s.Required {
-		return fmt.Errorf("flag %s is not defined: %w", s.EnvName, ErrFlagRequired)
+	for _, flag := range s {
+		t.AppendRows([]table.Row{
+			{flag.Name(), flag.DefaultValue(), flag.IsRequired(), flag.CurrentValue()},
+		})
 	}
 
-	// creates a pointer of the type T pointing to the response object and switch basing on the ptrs
-	var response T
-	switch p := any(&response).(type) {
-	case *int:
-		tmp, err := strings.ToInt[int](valueFromEnv)
-		if err != nil {
-			return fmt.Errorf("fail to parse flag %s error %w", s.EnvName, err)
-		}
-		*p = tmp
-
-	case *int32:
-		tmp, err := strings.ToInt[int32](valueFromEnv)
-		if err != nil {
-			return fmt.Errorf("fail to parse flag %s error %w", s.EnvName, err)
-		}
-		*p = tmp
-
-	case *int64:
-		tmp, err := strings.ToInt[int64](valueFromEnv)
-		if err != nil {
-			return fmt.Errorf("fail to parse flag %s error %w", s.EnvName, err)
-		}
-		*p = tmp
-
-	case *float32:
-		tmp, err := strings.ToFloat[float32](valueFromEnv)
-		if err != nil {
-			return fmt.Errorf("fail to parse flag %s error %w", s.EnvName, err)
-		}
-		*p = tmp
-
-	case *float64:
-		tmp, err := strings.ToFloat[float64](valueFromEnv)
-		if err != nil {
-			return fmt.Errorf("fail to parse flag %s error %w", s.EnvName, err)
-		}
-		*p = tmp
-
-	case *string:
-		*p = valueFromEnv
-
-	default:
-		return fmt.Errorf("type %T: %w", p, ErrUnexpectedType)
-	}
-
-	// update the value of the passed variable
-	if s.isEmpty(response) {
-		*s.Value = s.Default
-	} else {
-		*s.Value = response
-	}
-
-	return nil
+	return t.Render()
 }

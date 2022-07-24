@@ -60,3 +60,23 @@ func TestParse(t *testing.T) {
 	assert.NotNil(err)
 	assert.ErrorIs(err, env.ErrFlagRequired)
 }
+
+func TestStringer(t *testing.T) {
+	assert := require.New(t)
+
+	var resultInt int
+	var resultFloat float64
+	var resultStr, resultDef string
+
+	// try to get those parses
+	flags := env.Flags{
+		&env.BaseFlag[int]{Value: &resultInt, EnvName: "SOME_INT"},
+		&env.BaseFlag[float64]{Value: &resultFloat, EnvName: "SOME_FLOAT", Default: 33.41},
+		&env.BaseFlag[string]{Value: &resultStr, EnvName: "SOME_STRING"},
+		&env.BaseFlag[string]{Value: &resultDef, EnvName: "NOT_IN_ENV", Default: "somevalue"},
+	}
+
+	// check if occurred some error during parse
+	err := env.Parse(flags)
+	assert.Nil(err)
+}
