@@ -78,5 +78,6 @@ func TestStringer(t *testing.T) {
 
 	// check if occurred some error during parse
 	err := env.Parse(flags)
-	assert.Nil(err)
+	t.Log(flags)
+	assert.NotNil(err)
 }

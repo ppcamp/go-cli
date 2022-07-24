@@ -3,7 +3,6 @@ package env
 import (
 	"errors"
 	"fmt"
-	"os"
 	basestrings "strings"
 	"syscall"
 
@@ -50,7 +49,6 @@ func Parse(flags Flags) error {
 
 func (s Flags) String() string {
 	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
 	t.SetTitle("\nBase Flag\n")
 	t.AppendHeader(table.Row{"Var Name", "Default Value", "Required", "Current Value"})
 	style := table.StyleLight
