@@ -49,15 +49,22 @@ func Parse(flags Flags) error {
 
 func (s Flags) String() string {
 	t := table.NewWriter()
-	t.SetTitle("\nBase Flag\n")
-	t.AppendHeader(table.Row{"Var Name", "Default Value", "Required", "Current Value"})
+	t.SetTitle("\nFlags\n")
+	t.AppendHeader(table.Row{"Var Name", "Required", "Default Value", "Current Value"})
 	style := table.StyleLight
 	style.Format.Header = text.FormatDefault
 	t.SetStyle(style)
 
+	t.SetColumnConfigs([]table.ColumnConfig{
+		{WidthMax: 6, ColorsHeader: []text.Color{text.BgCyan}},
+		{WidthMax: 3, ColorsHeader: []text.Color{text.BgCyan}},
+		{WidthMax: 10, ColorsHeader: []text.Color{text.BgCyan}},
+		{WidthMax: 10, ColorsHeader: []text.Color{text.BgCyan}},
+	})
+
 	for _, flag := range s {
 		t.AppendRows([]table.Row{
-			{flag.Name(), flag.DefaultValue(), flag.IsRequired(), flag.CurrentValue()},
+			{flag.Name(), flag.IsRequired(), flag.DefaultValue(), flag.CurrentValue()},
 		})
 	}
 
