@@ -51,15 +51,17 @@ func (s Flags) String() string {
 	t := table.NewWriter()
 	t.SetTitle("\nFlags\n")
 	t.AppendHeader(table.Row{"Var Name", "Required", "Default Value", "Current Value"})
+
 	style := table.StyleLight
 	style.Format.Header = text.FormatDefault
+	style.Title.Colors = []text.Color{text.BgCyan}
 	t.SetStyle(style)
 
 	t.SetColumnConfigs([]table.ColumnConfig{
-		{WidthMax: 6, ColorsHeader: []text.Color{text.BgCyan}},
-		{WidthMax: 3, ColorsHeader: []text.Color{text.BgCyan}},
-		{WidthMax: 10, ColorsHeader: []text.Color{text.BgCyan}},
-		{WidthMax: 10, ColorsHeader: []text.Color{text.BgCyan}},
+		{Number: 1, WidthMax: 30, ColorsHeader: []text.Color{text.BgCyan}},
+		{Number: 2, WidthMax: 20, ColorsHeader: []text.Color{text.BgCyan}},
+		{Number: 3, WidthMax: 50, ColorsHeader: []text.Color{text.BgCyan}},
+		{Number: 4, WidthMax: 50, ColorsHeader: []text.Color{text.BgCyan}},
 	})
 
 	for _, flag := range s {
